@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ClassTrack — Attendance Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d0f14;
+  --surface: #161820;
+  --surface2: #1e2029;
+  --surface3: #252733;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #f0f0f4;
+  --text2: #8b8d9e;
+  --text3: #5a5c6e;
+  --accent: #6c63ff;
+  --accent2: #8b85ff;
+  --accent-dim: rgba(108,99,255,0.15);
+  --green: #22c97a;
+  --green-dim: rgba(34,201,122,0.12);
+  --red: #ff5e6c;
+  --red-dim: rgba(255,94,108,0.12);
+  --amber: #f5a623;
+  --amber-dim: rgba(245,166,35,0.12);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Layout */
+.app { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: 240px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 10;
+}
+
+.main { margin-left: 240px; flex: 1; padding: 2rem; min-height: 100vh; }
+
+/* Sidebar */
+.brand {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 0.5rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 1.5rem;
+}
+
+.brand-icon {
+  width: 32px; height: 32px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+
+.brand-name {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+}
+
+.brand-sub { font-size: 10px; color: var(--text3); letter-spacing: 0.08em; text-transform: uppercase; }
+
+.nav-label {
+  font-size: 10px; font-weight: 500; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text3);
+  padding: 0 0.5rem; margin-bottom: 0.5rem;
+}
+
+.nav-btn {
+  display: flex; align-items: center; gap: 10px;
+  width: 100%; padding: 9px 12px;
+  border: none; background: transparent;
+  color: var(--text2); font-family: 'Outfit', sans-serif;
+  font-size: 13px; cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s;
+  margin-bottom: 2px;
+}
+
+.nav-btn:hover { background: var(--surface2); color: var(--text); }
+.nav-btn.active { background: var(--accent-dim); color: var(--accent2); }
+
+.nav-icon { font-size: 15px; width: 20px; text-align: center; }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.class-info-box {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+}
+
+.class-info-label { font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+.class-info-val { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; color: var(--text); }
+.class-info-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+
+/* Page sections */
+.section { display: none; }
+.section.active { display: block; }
+
+/* Page header */
+.page-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.75rem;
+}
+
+.page-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px; font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.page-sub { font-size: 13px; color: var(--text3); margin-top: 2px; }
+
+/* Stat cards */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 1.75rem;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+.stat-card.blue::before { background: var(--accent); }
+.stat-card.green::before { background: var(--green); }
+.stat-card.red::before { background: var(--red); }
+.stat-card.amber::before { background: var(--amber); }
+
+.stat-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.stat-val { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; line-height: 1; }
+.stat-card.blue .stat-val { color: var(--accent2); }
+.stat-card.green .stat-val { color: var(--green); }
+.stat-card.red .stat-val { color: var(--red); }
+.stat-card.amber .stat-val { color: var(--amber); }
+.stat-sub { font-size: 11px; color: var(--text3); margin-top: 4px; }
+
+/* Controls bar */
+.controls-bar {
+  display: flex; gap: 10px; align-items: center;
+  margin-bottom: 1.25rem; flex-wrap: wrap;
+}
+
+.search-box {
+  flex: 1; min-width: 180px;
+  position: relative;
+}
+
+.search-box input {
+  width: 100%; padding: 9px 12px 9px 36px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-family: 'Outfit', sans-serif; font-size: 13px;
+  outline: none; transition: border 0.15s;
+}
+
+.search-box input:focus { border-color: var(--accent); }
+.search-box input::placeholder { color: var(--text3); }
+
+.search-icon {
+  position: absolute; left: 11px; top: 50%;
+  transform: translateY(-50%); color: var(--text3); font-size: 14px;
+}
+
+.btn {
+  padding: 9px 16px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text);
+  font-family: 'Outfit', sans-serif; font-size: 13px;
+  border-radius: var(--radius-sm); cursor: pointer;
+  transition: all 0.15s; white-space: nowrap;
+}
+
+.btn:hover { background: var(--surface2); border-color: var(--border2); }
+
+.btn-primary {
+  background: var(--accent); border-color: var(--accent);
+  color: #fff; font-weight: 500;
+}
+
+.btn-primary:hover { background: var(--accent2); border-color: var(--accent2); }
+
+.btn-green { background: var(--green-dim); border-color: var(--green); color: var(--green); font-weight: 500; }
+.btn-green:hover { background: rgba(34,201,122,0.2); }
+
+.btn-red { background: var(--red-dim); border-color: var(--red); color: var(--red); font-weight: 500; }
+.btn-red:hover { background: rgba(255,94,108,0.2); }
+
+.btn-sm { padding: 5px 11px; font-size: 12px; }
+
+/* Table */
+.table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+table { width: 100%; border-collapse: collapse; }
+
+thead tr { background: var(--surface2); border-bottom: 1px solid var(--border); }
+
+thead th {
+  padding: 11px 14px;
+  text-align: left; font-size: 11px;
+  font-weight: 500; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--text3);
+  white-space: nowrap;
+}
+
+thead th.center { text-align: center; }
+
+tbody tr {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+}
+
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: var(--surface2); }
+
+tbody td { padding: 12px 14px; font-size: 13px; vertical-align: middle; }
+tbody td.center { text-align: center; }
+
+/* Avatar */
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; flex-shrink: 0;
+}
+
+.student-cell { display: flex; align-items: center; gap: 10px; }
+.student-name { font-weight: 500; color: var(--text); }
+.student-roll { font-size: 11px; color: var(--text3); }
+
+/* Progress bar */
+.pct-bar-wrap { display: flex; align-items: center; gap: 10px; }
+.pct-bar {
+  flex: 1; height: 5px;
+  background: var(--surface3); border-radius: 99px;
+  overflow: hidden; min-width: 60px;
+}
+.pct-bar-fill { height: 100%; border-radius: 99px; transition: width 0.3s; }
+.pct-val { font-weight: 600; font-size: 13px; min-width: 38px; text-align: right; }
+
+/* Badge */
+.badge {
+  display: inline-block; padding: 3px 9px;
+  border-radius: 99px; font-size: 11px; font-weight: 500;
+}
+.badge-green { background: var(--green-dim); color: var(--green); }
+.badge-red { background: var(--red-dim); color: var(--red); }
+.badge-amber { background: var(--amber-dim); color: var(--amber); }
+
+/* Modal */
+.modal-overlay {
+  display: none; position: fixed;
+  inset: 0; background: rgba(0,0,0,0.7);
+  z-index: 100; align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: var(--radius); padding: 1.75rem;
+  width: 420px; max-width: 95vw;
+  animation: modalIn 0.2s ease;
+}
+
+@keyframes modalIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+.modal-title {
+  font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700;
+  margin-bottom: 1.25rem;
+}
+
+.form-group { margin-bottom: 1rem; }
+.form-label { font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 5px; display: block; }
+.form-input {
+  width: 100%; padding: 9px 12px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text);
+  font-family: 'Outfit', sans-serif; font-size: 13px;
+  outline: none; transition: border 0.15s;
+}
+.form-input:focus { border-color: var(--accent); }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem; }
+
+/* Take attendance section */
+.att-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.att-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: border-color 0.15s;
+}
+
+.att-card.present { border-color: var(--green); background: var(--green-dim); }
+.att-card.absent { border-color: var(--red); background: var(--red-dim); }
+
+.att-card-name { font-weight: 500; font-size: 13px; }
+.att-card-roll { font-size: 11px; color: var(--text3); }
+
+.att-toggle {
+  display: flex; gap: 6px;
+}
+
+.att-btn {
+  flex: 1; padding: 6px;
+  border-radius: 6px; border: 1px solid var(--border);
+  background: var(--surface2); color: var(--text2);
+  font-family: 'Outfit', sans-serif; font-size: 12px;
+  font-weight: 500; cursor: pointer; transition: all 0.15s;
+}
+
+.att-btn.p-active { background: var(--green); border-color: var(--green); color: #fff; }
+.att-btn.a-active { background: var(--red); border-color: var(--red); color: #fff; }
+
+/* Reports */
+.report-filters {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 1.25rem;
+  margin-bottom: 1.25rem;
+  display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end;
+}
+
+.filter-group { display: flex; flex-direction: column; gap: 4px; }
+.filter-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; }
+
+.select-input {
+  padding: 8px 12px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text); font-family: 'Outfit', sans-serif;
+  font-size: 13px; outline: none; cursor: pointer;
+}
+
+.select-input:focus { border-color: var(--accent); }
+
+/* History log */
+.log-entry {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.log-entry:last-child { border-bottom: none; }
+
+.log-date { font-size: 12px; font-weight: 500; color: var(--text); }
+.log-sub { font-size: 11px; color: var(--text3); }
+.log-right { display: flex; gap: 12px; align-items: center; }
+.log-count { font-size: 12px; }
+
+/* Empty state */
+.empty-state {
+  padding: 3rem; text-align: center; color: var(--text3);
+}
+.empty-icon { font-size: 36px; margin-bottom: 0.75rem; }
+.empty-title { font-size: 15px; font-weight: 500; color: var(--text2); margin-bottom: 4px; }
+.empty-sub { font-size: 13px; }
+
+/* Toast */
+.toast {
+  position: fixed; bottom: 2rem; right: 2rem;
+  background: var(--surface3); border: 1px solid var(--border2);
+  border-radius: var(--radius-sm); padding: 12px 18px;
+  font-size: 13px; color: var(--text);
+  z-index: 999; opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.25s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 99px; }
+
+/* Responsive */
+@media (max-width: 700px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 1rem; }
+  .stat-grid { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">📋</div>
+      <div>
+        <div class="brand-name">ClassTrack</div>
+        <div class="brand-sub">Attendance Manager</div>
+      </div>
+    </div>
+
+    <div class="nav-label">Menu</div>
+    <button class="nav-btn active" onclick="showSection('dashboard')">
+      <span class="nav-icon">⊞</span> Dashboard
+    </button>
+    <button class="nav-btn" onclick="showSection('students')">
+      <span class="nav-icon">👥</span> Students
+    </button>
+    <button class="nav-btn" onclick="showSection('attendance')">
+      <span class="nav-icon">✅</span> Take Attendance
+    </button>
+    <button class="nav-btn" onclick="showSection('reports')">
+      <span class="nav-icon">📊</span> Reports
+    </button>
+    <button class="nav-btn" onclick="showSection('history')">
+      <span class="nav-icon">🗓</span> History
+    </button>
+
+    <div class="sidebar-footer">
+      <div class="class-info-box">
+        <div class="class-info-label">Total Classes Held</div>
+        <div class="class-info-val" id="sb-total-classes">0</div>
+        <div class="class-info-sub" id="sb-class-sub">No sessions yet</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- DASHBOARD -->
+    <div class="section active" id="sec-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Dashboard</div>
+          <div class="page-sub">Overview of class attendance</div>
+        </div>
+        <button class="btn btn-primary" onclick="showSection('attendance')">+ Take Attendance</button>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card blue">
+          <div class="stat-label">Total Students</div>
+          <div class="stat-val" id="ds-total">0</div>
+          <div class="stat-sub">enrolled</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-label">Classes Held</div>
+          <div class="stat-val" id="ds-classes">0</div>
+          <div class="stat-sub">sessions total</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-label">Avg Attendance</div>
+          <div class="stat-val" id="ds-avg">—</div>
+          <div class="stat-sub">class average</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-label">Below 75%</div>
+          <div class="stat-val" id="ds-below">0</div>
+          <div class="stat-sub">students at risk</div>
+        </div>
+      </div>
+
+      <div class="controls-bar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="dash-search" placeholder="Search student…" oninput="renderDashTable()" />
+        </div>
+        <select class="select-input" id="dash-filter" onchange="renderDashTable()">
+          <option value="all">All Students</option>
+          <option value="good">Above 75%</option>
+          <option value="risk">Below 75%</option>
+        </select>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th class="center">Present</th>
+              <th class="center">Absent</th>
+              <th class="center">Total</th>
+              <th>Attendance %</th>
+              <th class="center">Status</th>
+              <th class="center">Action</th>
+            </tr>
+          </thead>
+          <tbody id="dash-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- STUDENTS -->
+    <div class="section" id="sec-students">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Students</div>
+          <div class="page-sub">Manage enrolled students</div>
+        </div>
+        <button class="btn btn-primary" onclick="openAddStudent()">+ Add Student</button>
+      </div>
+
+      <div class="controls-bar">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="stu-search" placeholder="Search by name or roll no…" oninput="renderStudentsTable()" />
+        </div>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th class="center">Roll No.</th>
+              <th class="center">Present</th>
+              <th class="center">Absent</th>
+              <th class="center">Total</th>
+              <th>Attendance %</th>
+              <th class="center">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="stu-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAKE ATTENDANCE -->
+    <div class="section" id="sec-attendance">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Take Attendance</div>
+          <div class="page-sub" id="att-date-label">Select date and mark attendance</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <input type="date" id="att-date" class="form-input" style="width:auto;" />
+          <button class="btn btn-green" onclick="submitAttendance()">Save Session</button>
+        </div>
+      </div>
+
+      <div class="controls-bar">
+        <button class="btn btn-sm btn-green" onclick="markAll('present')">✓ Mark All Present</button>
+        <button class="btn btn-sm btn-red" onclick="markAll('absent')">✗ Mark All Absent</button>
+        <span id="att-count" style="font-size:12px;color:var(--text3);margin-left:6px;"></span>
+      </div>
+
+      <div class="att-grid" id="att-grid"></div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="section" id="sec-reports">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Reports</div>
+          <div class="page-sub">Detailed attendance analytics</div>
+        </div>
+      </div>
+
+      <div class="report-filters">
+        <div class="filter-group">
+          <span class="filter-label">Filter by Status</span>
+          <select class="select-input" id="rpt-filter" onchange="renderReports()">
+            <option value="all">All Students</option>
+            <option value="good">Above 75%</option>
+            <option value="risk">Below 75%</option>
+            <option value="critical">Below 50%</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <span class="filter-label">Sort by</span>
+          <select class="select-input" id="rpt-sort" onchange="renderReports()">
+            <option value="pct-desc">Highest %</option>
+            <option value="pct-asc">Lowest %</option>
+            <option value="name">Name A–Z</option>
+            <option value="present">Most Present</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <table>
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th class="center">Present</th>
+              <th class="center">Absent</th>
+              <th class="center">Total Classes</th>
+              <th>Attendance</th>
+              <th class="center">Status</th>
+              <th class="center">Needs to Attend</th>
+            </tr>
+          </thead>
+          <tbody id="rpt-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="section" id="sec-history">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Session History</div>
+          <div class="page-sub">All recorded attendance sessions</div>
+        </div>
+      </div>
+      <div class="table-card" id="history-list"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ADD STUDENT MODAL -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <div class="modal-title">Add New Student</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Full Name *</label>
+        <input class="form-input" id="f-name" placeholder="e.g. Riya Sharma" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Roll Number *</label>
+        <input class="form-input" id="f-roll" placeholder="e.g. CS-101" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Phone (optional)</label>
+        <input class="form-input" id="f-phone" placeholder="9876543210" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email (optional)</label>
+        <input class="form-input" id="f-email" placeholder="student@email.com" />
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="addStudent()">Add Student</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────
+let students = JSON.parse(localStorage.getItem('ct_students') || '[]');
+let sessions = JSON.parse(localStorage.getItem('ct_sessions') || '[]');
+
+const COLORS = ['#6c63ff','#22c97a','#ff5e6c','#f5a623','#00bcd4','#e91e8c','#ff9800','#4caf50'];
+
+function save() {
+  localStorage.setItem('ct_students', JSON.stringify(students));
+  localStorage.setItem('ct_sessions', JSON.stringify(sessions));
+}
+
+function getColor(name) {
+  let h = 0; for (let c of name) h = (h * 31 + c.charCodeAt(0)) % COLORS.length;
+  return COLORS[h];
+}
+
+function initials(name) {
+  return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+}
+
+function getStudentStats(sid) {
+  let present = 0, absent = 0;
+  for (const s of sessions) {
+    if (s.records[sid] === 'P') present++;
+    else if (s.records[sid] === 'A') absent++;
+  }
+  const total = present + absent;
+  const pct = total ? Math.round((present / total) * 100) : null;
+  return { present, absent, total, pct };
+}
+
+function totalClasses() { return sessions.length; }
+
+// ── STATUS ────────────────────────────────────────────
+function statusBadge(pct) {
+  if (pct === null) return '<span class="badge badge-amber">No data</span>';
+  if (pct >= 75) return `<span class="badge badge-green">Good</span>`;
+  if (pct >= 50) return `<span class="badge badge-amber">At Risk</span>`;
+  return `<span class="badge badge-red">Critical</span>`;
+}
+
+function pctColor(pct) {
+  if (pct === null) return '#5a5c6e';
+  if (pct >= 75) return 'var(--green)';
+  if (pct >= 50) return 'var(--amber)';
+  return 'var(--red)';
+}
+
+// ── SECTIONS ──────────────────────────────────────────
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-' + id).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    if (b.textContent.toLowerCase().includes(id === 'dashboard' ? 'dash' : id)) b.classList.add('active');
+  });
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'students') renderStudentsTable();
+  if (id === 'attendance') renderAttendanceGrid();
+  if (id === 'reports') renderReports();
+  if (id === 'history') renderHistory();
+}
+
+// ── DASHBOARD ─────────────────────────────────────────
+function renderDashboard() {
+  const n = students.length;
+  const tc = totalClasses();
+  const pctsArr = students.map(s => getStudentStats(s.id).pct).filter(p => p !== null);
+  const avg = pctsArr.length ? Math.round(pctsArr.reduce((a,b)=>a+b,0)/pctsArr.length) : null;
+  const below = students.filter(s => { const p = getStudentStats(s.id).pct; return p !== null && p < 75; }).length;
+
+  document.getElementById('ds-total').textContent = n;
+  document.getElementById('ds-classes').textContent = tc;
+  document.getElementById('ds-avg').textContent = avg !== null ? avg + '%' : '—';
+  document.getElementById('ds-below').textContent = below;
+  document.getElementById('sb-total-classes').textContent = tc;
+  document.getElementById('sb-class-sub').textContent = tc ? `Last: ${sessions[sessions.length-1].date}` : 'No sessions yet';
+
+  renderDashTable();
+}
+
+function renderDashTable() {
+  const q = (document.getElementById('dash-search')?.value || '').toLowerCase();
+  const f = document.getElementById('dash-filter')?.value || 'all';
+  const tbody = document.getElementById('dash-table-body');
+
+  let list = students.filter(s => {
+    const ok = s.name.toLowerCase().includes(q) || s.roll.toLowerCase().includes(q);
+    if (!ok) return false;
+    const {pct} = getStudentStats(s.id);
+    if (f === 'good') return pct !== null && pct >= 75;
+    if (f === 'risk') return pct !== null && pct < 75;
+    return true;
+  });
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">👤</div><div class="empty-title">${students.length ? 'No matches' : 'No students yet'}</div><div class="empty-sub">${students.length ? 'Try a different search' : 'Add students to get started'}</div></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(s => {
+    const {present, absent, total, pct} = getStudentStats(s.id);
+    const col = getColor(s.name);
+    return `<tr>
+      <td>
+        <div class="student-cell">
+          <div class="avatar" style="background:${col}22;color:${col}">${initials(s.name)}</div>
+          <div><div class="student-name">${s.name}</div><div class="student-roll">${s.roll}</div></div>
+        </div>
+      </td>
+      <td class="center" style="color:var(--green);font-weight:500">${present}</td>
+      <td class="center" style="color:var(--red);font-weight:500">${absent}</td>
+      <td class="center" style="color:var(--text2)">${total}</td>
+      <td>
+        <div class="pct-bar-wrap">
+          <div class="pct-bar"><div class="pct-bar-fill" style="width:${pct||0}%;background:${pctColor(pct)}"></div></div>
+          <span class="pct-val" style="color:${pctColor(pct)}">${pct !== null ? pct+'%' : '—'}</span>
+        </div>
+      </td>
+      <td class="center">${statusBadge(pct)}</td>
+      <td class="center">
+        <button class="btn btn-sm" onclick="deleteStudent('${s.id}')" style="color:var(--red);border-color:var(--red-dim);">Remove</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── STUDENTS TABLE ────────────────────────────────────
+function renderStudentsTable() {
+  const q = (document.getElementById('stu-search')?.value || '').toLowerCase();
+  const tbody = document.getElementById('stu-table-body');
+
+  const list = students.filter(s =>
+    s.name.toLowerCase().includes(q) || s.roll.toLowerCase().includes(q)
+  );
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">👥</div><div class="empty-title">No students found</div><div class="empty-sub">Click "Add Student" to enroll someone</div></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(s => {
+    const {present, absent, total, pct} = getStudentStats(s.id);
+    const col = getColor(s.name);
+    return `<tr>
+      <td>
+        <div class="student-cell">
+          <div class="avatar" style="background:${col}22;color:${col}">${initials(s.name)}</div>
+          <div>
+            <div class="student-name">${s.name}</div>
+            <div class="student-roll">${s.phone || ''} ${s.email ? '· '+s.email : ''}</div>
+          </div>
+        </div>
+      </td>
+      <td class="center" style="color:var(--text2)">${s.roll}</td>
+      <td class="center" style="color:var(--green);font-weight:500">${present}</td>
+      <td class="center" style="color:var(--red);font-weight:500">${absent}</td>
+      <td class="center">${total}</td>
+      <td>
+        <div class="pct-bar-wrap">
+          <div class="pct-bar"><div class="pct-bar-fill" style="width:${pct||0}%;background:${pctColor(pct)}"></div></div>
+          <span class="pct-val" style="color:${pctColor(pct)}">${pct !== null ? pct+'%' : '—'}</span>
+        </div>
+      </td>
+      <td class="center">
+        <button class="btn btn-sm" style="color:var(--red);border-color:var(--red-dim);" onclick="deleteStudent('${s.id}')">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── ATTENDANCE ────────────────────────────────────────
+let attState = {};
+
+function renderAttendanceGrid() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('att-date').value = today;
+  attState = {};
+  students.forEach(s => attState[s.id] = null);
+  renderGrid();
+}
+
+function renderGrid() {
+  const grid = document.getElementById('att-grid');
+  if (!students.length) {
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">👥</div><div class="empty-title">No students enrolled</div><div class="empty-sub">Add students first from the Students tab</div></div>`;
+    updateAttCount();
+    return;
+  }
+
+  grid.innerHTML = students.map(s => {
+    const col = getColor(s.name);
+    const st = attState[s.id];
+    return `<div class="att-card ${st === 'P' ? 'present' : st === 'A' ? 'absent' : ''}" id="ac-${s.id}">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="avatar" style="background:${col}22;color:${col}">${initials(s.name)}</div>
+        <div><div class="att-card-name">${s.name}</div><div class="att-card-roll">${s.roll}</div></div>
+      </div>
+      <div class="att-toggle">
+        <button class="att-btn ${st==='P'?'p-active':''}" onclick="setAtt('${s.id}','P')">✓ Present</button>
+        <button class="att-btn ${st==='A'?'a-active':''}" onclick="setAtt('${s.id}','A')">✗ Absent</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  updateAttCount();
+}
+
+function setAtt(id, val) {
+  attState[id] = attState[id] === val ? null : val;
+  const card = document.getElementById('ac-' + id);
+  card.className = 'att-card ' + (attState[id] === 'P' ? 'present' : attState[id] === 'A' ? 'absent' : '');
+  card.querySelectorAll('.att-btn').forEach((b,i) => {
+    b.className = 'att-btn' + (i===0 && attState[id]==='P' ? ' p-active' : i===1 && attState[id]==='A' ? ' a-active' : '');
+  });
+  updateAttCount();
+}
+
+function updateAttCount() {
+  const p = Object.values(attState).filter(v=>v==='P').length;
+  const a = Object.values(attState).filter(v=>v==='A').length;
+  const u = students.length - p - a;
+  document.getElementById('att-count').textContent = `${p} present · ${a} absent · ${u} unmarked`;
+}
+
+function markAll(val) {
+  students.forEach(s => { attState[s.id] = val === 'present' ? 'P' : 'A'; });
+  renderGrid();
+}
+
+function submitAttendance() {
+  const date = document.getElementById('att-date').value;
+  if (!date) { toast('Please select a date'); return; }
+  if (!students.length) { toast('No students to record'); return; }
+
+  const unmarked = students.filter(s => !attState[s.id]);
+  if (unmarked.length) {
+    if (!confirm(`${unmarked.length} student(s) unmarked. They will be recorded as Absent. Continue?`)) return;
+    unmarked.forEach(s => attState[s.id] = 'A');
+  }
+
+  const existing = sessions.findIndex(s => s.date === date);
+  if (existing >= 0) {
+    if (!confirm('A session already exists for this date. Overwrite?')) return;
+    sessions[existing].records = { ...attState };
+  } else {
+    sessions.push({ date, records: { ...attState } });
+    sessions.sort((a,b) => a.date.localeCompare(b.date));
+  }
+
+  save();
+  toast('✅ Attendance saved for ' + date);
+  document.getElementById('sb-total-classes').textContent = sessions.length;
+  attState = {};
+  students.forEach(s => attState[s.id] = null);
+  renderGrid();
+}
+
+// ── REPORTS ───────────────────────────────────────────
+function renderReports() {
+  const f = document.getElementById('rpt-filter')?.value || 'all';
+  const srt = document.getElementById('rpt-sort')?.value || 'pct-desc';
+  const tbody = document.getElementById('rpt-table-body');
+  const tc = totalClasses();
+
+  let list = students.map(s => ({ s, ...getStudentStats(s.id) }));
+
+  if (f === 'good') list = list.filter(x => x.pct !== null && x.pct >= 75);
+  if (f === 'risk') list = list.filter(x => x.pct !== null && x.pct < 75);
+  if (f === 'critical') list = list.filter(x => x.pct !== null && x.pct < 50);
+
+  list.sort((a,b) => {
+    if (srt === 'pct-desc') return (b.pct||0) - (a.pct||0);
+    if (srt === 'pct-asc') return (a.pct||0) - (b.pct||0);
+    if (srt === 'name') return a.s.name.localeCompare(b.s.name);
+    if (srt === 'present') return b.present - a.present;
+    return 0;
+  });
+
+  if (!list.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">No data</div><div class="empty-sub">Record attendance sessions to see reports</div></div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = list.map(({ s, present, absent, total, pct }) => {
+    const col = getColor(s.name);
+    // Classes needed to reach 75%
+    let needed = '—';
+    if (pct !== null && pct < 75 && tc > 0) {
+      let n = 0;
+      while (true) {
+        const np = present + n, nt = total + n;
+        if (nt > 0 && Math.round((np/nt)*100) >= 75) { needed = n + ' more'; break; }
+        n++;
+        if (n > 200) { needed = 'Too many'; break; }
+      }
+    } else if (pct !== null && pct >= 75) {
+      needed = '✓ Met';
+    }
+
+    return `<tr>
+      <td>
+        <div class="student-cell">
+          <div class="avatar" style="background:${col}22;color:${col}">${initials(s.name)}</div>
+          <div><div class="student-name">${s.name}</div><div class="student-roll">${s.roll}</div></div>
+        </div>
+      </td>
+      <td class="center" style="color:var(--green);font-weight:500">${present}</td>
+      <td class="center" style="color:var(--red);font-weight:500">${absent}</td>
+      <td class="center">${tc}</td>
+      <td>
+        <div class="pct-bar-wrap">
+          <div class="pct-bar"><div class="pct-bar-fill" style="width:${pct||0}%;background:${pctColor(pct)}"></div></div>
+          <span class="pct-val" style="color:${pctColor(pct)}">${pct !== null ? pct+'%' : '—'}</span>
+        </div>
+      </td>
+      <td class="center">${statusBadge(pct)}</td>
+      <td class="center" style="font-size:12px;color:${needed==='✓ Met'?'var(--green)':'var(--amber)'}">${needed}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── HISTORY ───────────────────────────────────────────
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (!sessions.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">🗓</div><div class="empty-title">No sessions recorded</div><div class="empty-sub">Take attendance to see history here</div></div>`;
+    return;
+  }
+
+  const sorted = [...sessions].sort((a,b) => b.date.localeCompare(a.date));
+  el.innerHTML = sorted.map(sess => {
+    const vals = Object.values(sess.records);
+    const p = vals.filter(v=>v==='P').length;
+    const a = vals.filter(v=>v==='A').length;
+    const pct = vals.length ? Math.round((p/vals.length)*100) : 0;
+    const d = new Date(sess.date);
+    const dayName = d.toLocaleDateString('en-IN', {weekday:'long'});
+    const dateStr = d.toLocaleDateString('en-IN', {day:'2-digit', month:'short', year:'numeric'});
+    return `<div class="log-entry">
+      <div>
+        <div class="log-date">${dayName}, ${dateStr}</div>
+        <div class="log-sub">${vals.length} students recorded</div>
+      </div>
+      <div class="log-right">
+        <span class="log-count" style="color:var(--green)">✓ ${p} present</span>
+        <span class="log-count" style="color:var(--red)">✗ ${a} absent</span>
+        <span class="badge ${pct>=75?'badge-green':pct>=50?'badge-amber':'badge-red'}">${pct}%</span>
+        <button class="btn btn-sm" style="color:var(--red);border-color:var(--red-dim)" onclick="deleteSession('${sess.date}')">Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deleteSession(date) {
+  if (!confirm('Delete this session?')) return;
+  sessions = sessions.filter(s => s.date !== date);
+  save(); renderHistory();
+  toast('Session deleted');
+}
+
+// ── STUDENTS CRUD ─────────────────────────────────────
+function openAddStudent() {
+  document.getElementById('f-name').value = '';
+  document.getElementById('f-roll').value = '';
+  document.getElementById('f-phone').value = '';
+  document.getElementById('f-email').value = '';
+  document.getElementById('add-modal').classList.add('open');
+  setTimeout(() => document.getElementById('f-name').focus(), 50);
+}
+
+function closeModal() {
+  document.getElementById('add-modal').classList.remove('open');
+}
+
+function addStudent() {
+  const name = document.getElementById('f-name').value.trim();
+  const roll = document.getElementById('f-roll').value.trim();
+  if (!name || !roll) { toast('Name and roll number are required'); return; }
+  if (students.find(s => s.roll === roll)) { toast('Roll number already exists'); return; }
+
+  students.push({
+    id: Date.now().toString(),
+    name, roll,
+    phone: document.getElementById('f-phone').value.trim(),
+    email: document.getElementById('f-email').value.trim(),
+  });
+
+  save(); closeModal(); renderStudentsTable();
+  toast('✅ ' + name + ' added');
+}
+
+function deleteStudent(id) {
+  const s = students.find(x => x.id === id);
+  if (!confirm(`Remove ${s?.name}? Their attendance records will be kept.`)) return;
+  students = students.filter(x => x.id !== id);
+  save(); renderStudentsTable(); renderDashboard();
+  toast('Student removed');
+}
+
+// ── TOAST ─────────────────────────────────────────────
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── KEYBOARD ──────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+document.getElementById('add-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('add-modal')) closeModal();
+});
+
+// ── INIT ──────────────────────────────────────────────
+renderDashboard();
+document.getElementById('att-date').value = new Date().toISOString().split('T')[0];
+attState = {};
+students.forEach(s => attState[s.id] = null);
+</script>
+</body>
+</html>
