@@ -1,6 +1,41 @@
-# # TOCE Attendance Management System
+<p align="center">
+  <img src="https://capsule-render.vercel.app/api?type=waving&height=190&text=TOCE%20Attendance%20Management&fontAlign=50&fontAlignY=38&fontSize=38&fontColor=ffffff&desc=Smart%20Attendance%20Tracking%20with%20a%203D%20Dashboard&descAlign=50&descAlignY=62&color=gradient&customColorList=6,12,20,24,30" alt="TOCE Attendance Management System Banner">
+</p>
 
-A full-stack web application for managing college attendance, users, subjects, sessions, and reports from one secure dashboard.
+<h1 align="center">TOCE Attendance Management System</h1>
+
+<p align="center">
+  A full-stack web application for managing college attendance, users, subjects, sessions, and reports from one secure 3D dashboard.
+</p>
+
+<p align="center">
+  <img alt="Python" src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white">
+  <img alt="Flask" src="https://img.shields.io/badge/Flask-111827?style=for-the-badge&logo=flask&logoColor=white">
+  <img alt="SQLite" src="https://img.shields.io/badge/SQLite-0EA5E9?style=for-the-badge&logo=sqlite&logoColor=white">
+  <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=111827">
+  <img alt="Status" src="https://img.shields.io/badge/Status-Active-22C55E?style=for-the-badge">
+</p>
+
+<p align="center">
+  <a href="#project-overview">Overview</a> |
+  <a href="#key-features">Features</a> |
+  <a href="#comprehensive-architecture-design">Architecture</a> |
+  <a href="#setup-instructions">Setup</a> |
+  <a href="#api-highlights">API</a>
+</p>
+
+---
+
+## Project Snapshot
+
+| Category | Details |
+| --- | --- |
+| Project Name | TOCE Attendance Management System |
+| Purpose | Digital attendance tracking for college departments |
+| Users | Admin, HOD, Teacher, Student |
+| Main Value | Faster attendance marking, organized records, and clear reports |
+| Frontend Style | Dark 3D glassmorphism dashboard with colorful highlights |
+| Backend Style | Flask monolithic architecture with API-driven dashboard actions |
 
 The project is built for TOCE-style academic workflows where administrators, HODs, teachers, and students need a simple way to manage attendance records and view attendance performance.
 
@@ -12,28 +47,38 @@ The system is designed to reduce manual attendance work, improve record accuracy
 
 ## Key Features
 
-- Secure login with hashed passwords
-- Forgot password and edit password support
-- Role-based access for Admin, HOD, Teacher, and Student
-- Department management
-- User and student management
-- Add, edit, search, and delete users
-- Subject management with department and semester mapping
-- Attendance session creation
-- Present, absent, and leave marking
-- Student-wise, subject-wise, and department-wise reports
-- Dashboard statistics
-- Responsive dark 3D frontend design
-- SQLite database with automatic table creation
+| Feature Area | Highlights |
+| --- | --- |
+| Authentication | Secure login, forgot password, edit password, password visibility controls |
+| User Management | Add, edit, search, and delete users with role-based restrictions |
+| Student Management | Store roll number, department, semester, section, batch year, and linked login account |
+| Subject Management | Manage subject code, name, department, semester, credits, and assigned teacher |
+| Attendance | Create sessions and mark students as present, absent, or leave |
+| Reports | Student-wise, subject-wise, and department-wise attendance summaries |
+| Dashboard | Role-based cards, management panels, search, filters, and quick actions |
+| Design | Responsive dark interface with colorful 3D glass-style visual elements |
 
 ## Tech Stack
 
-- Backend: Python, Flask
-- Database: SQLite
-- Frontend: HTML, CSS, JavaScript
-- Authentication: Flask sessions
-- Password Security: PBKDF2-HMAC-SHA256 hashing
-- Optional Public Hosting: ngrok
+| Area | Technology |
+| --- | --- |
+| Backend | Python, Flask |
+| Database | SQLite |
+| Frontend | HTML, CSS, JavaScript |
+| Authentication | Flask sessions |
+| Password Security | PBKDF2-HMAC-SHA256 hashing |
+| Public Sharing | Optional ngrok tunnel |
+
+## Visual Design System
+
+| Design Element | Style |
+| --- | --- |
+| Theme | Dark premium dashboard |
+| Visual Direction | 3D glassmorphism with glow accents |
+| Primary Colors | Violet, blue, emerald, cyan |
+| Background | Deep charcoal with soft gradients |
+| Components | Rounded panels, glowing buttons, compact data cards |
+| Experience Goal | Modern, attractive, readable, and practical for daily college use |
 
 ## Comprehensive Architecture Design
 
@@ -362,5 +407,3 @@ For production deployment, set a strong fixed Flask secret key, use HTTPS, keep 
 ## License
 
 This project is created for academic and learning purposes. You can modify and extend it based on your college requirements.
-ATTENDENCE-SYSTEM
-ATTENDENCE-SYSTEM
